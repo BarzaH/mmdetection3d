@@ -170,6 +170,11 @@ def add_mim_extention():
             src_path = osp.join(repo_path, filename)
             tar_path = osp.join(mim_path, filename)
 
+            if osp.isfile(tar_path) or osp.islink(tar_path):
+                os.remove(tar_path)
+            elif osp.isdir(tar_path):
+                shutil.rmtree(tar_path)
+
             if mode == 'symlink':
                 src_relpath = osp.relpath(src_path, osp.dirname(tar_path))
                 os.symlink(src_relpath, tar_path)
@@ -197,7 +202,7 @@ if __name__ == '__main__':
         author_email='zwwdev@gmail.com',
         keywords='computer vision, 3D object detection',
         url='https://github.com/open-mmlab/mmdetection3d',
-        packages=find_packages(),
+        packages=find_packages(exclude=('configs', 'tools', 'demo')),
         include_package_data=True,
         classifiers=[
             'Development Status :: 5 - Production/Stable',
