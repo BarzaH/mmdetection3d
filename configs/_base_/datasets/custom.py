@@ -7,7 +7,10 @@ custom_imports = dict(imports=[
 dataset_type = 'MyDataset'
 data_root = 'DATA_ROOT'
 class_names = ['LEP110_anchor', 'LEP110_prom', 'power_lines', 'vegetation']
-pcr = [0, -39.68, -3, 69.12, 39.68, 1]
+pcr = [
+                -136.7853946685791, -135.2938232421875, -45.29965019226074,
+                136.7853946685791, 135.2938232421875, 45.29965019226074
+            ]
 input_modality = dict(use_lidar=True, use_camera=False)
 metainfo = dict(classes=class_names)
 
@@ -21,12 +24,6 @@ train_pipeline = [
         type='LoadAnnotations3D',
         with_bbox_3d=True,
         with_label_3d=True),
-    dict(
-        type='ObjectNoise',
-        num_try=100,
-        translation_std=[1.0, 1.0, 0.5],
-        global_rot_range=[0.0, 0.0],
-        rot_range=[-0.78539816, 0.78539816]),
     dict(type='RandomFlip3D', flip_ratio_bev_horizontal=0.5),
     dict(
         type='GlobalRotScaleTrans',

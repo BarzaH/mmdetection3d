@@ -1,56 +1,77 @@
-voxel_size = [0.16, 0.16, 4]
-point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]
+# model settings
+# Voxel size for voxel encoder
+# Usually voxel size is changed consistently with the point cloud range
+# If point cloud range is modified, do remember to change all related
+# keys in the config.
+voxel_size = [0.683926973, 0.676469116, 90.599300385]
 model = dict(
-    type='VoxelNet',
+    type='MVXFasterRCNN',
     data_preprocessor=dict(
         type='Det3DDataPreprocessor',
         voxel=True,
         voxel_layer=dict(
-            max_num_points=32,
-            point_cloud_range=point_cloud_range,
+            max_num_points=64,
+            point_cloud_range=[
+                -136.7853946685791, -135.2938232421875, -45.29965019226074,
+                136.7853946685791, 135.2938232421875, 45.29965019226074
+            ],
             voxel_size=voxel_size,
-            max_voxels=(16000, 40000))),
-    voxel_encoder=dict(
-        type='PillarFeatureNet',
+            max_voxels=(90000, 120000))),
+    pts_voxel_encoder=dict(
+        type='HardVFE',
         in_channels=4,
-        feat_channels=[64],
+        feat_channels=[64, 64],
         with_distance=False,
         voxel_size=voxel_size,
-        point_cloud_range=point_cloud_range),
-    middle_encoder=dict(
-        type='PointPillarsScatter', in_channels=64,
-        output_shape=[int((point_cloud_range[4] - point_cloud_range[1]) / voxel_size[1]), int((point_cloud_range[3] - point_cloud_range[0]) / voxel_size[0])]),
-    backbone=dict(
+        with_cluster_center=True,
+        with_voxel_center=True,
+        point_cloud_range=[
+            -136.7853946685791, -135.2938232421875, -45.29965019226074,
+            136.7853946685791, 135.2938232421875, 45.29965019226074
+        ],
+        norm_cfg=dict(type='naiveSyncBN1d', eps=1e-3, momentum=0.01)),
+    pts_middle_encoder=dict(
+        type='PointPillarsScatter', in_channels=64, output_shape=[400, 400]),
+    pts_backbone=dict(
         type='SECOND',
         in_channels=64,
+        norm_cfg=dict(type='naiveSyncBN2d', eps=1e-3, momentum=0.01),
         layer_nums=[3, 5, 5],
         layer_strides=[2, 2, 2],
         out_channels=[64, 128, 256]),
-    neck=dict(
-        type='SECONDFPN',
+    pts_neck=dict(
+        type='mmdet.FPN',
+        norm_cfg=dict(type='naiveSyncBN2d', eps=1e-3, momentum=0.01),
+        act_cfg=dict(type='ReLU'),
         in_channels=[64, 128, 256],
-        upsample_strides=[1, 2, 4],
-        out_channels=[128, 128, 128]),
-    bbox_head=dict(
+        out_channels=256,
+        start_level=0,
+        num_outs=3),
+    pts_bbox_head=dict(
         type='Anchor3DHead',
-        num_classes=4,
-        in_channels=384,
-        feat_channels=384,
+        num_classes=5,
+        in_channels=256,
+        feat_channels=256,
         use_direction_classifier=True,
-        assign_per_class=True,
         anchor_generator=dict(
             type='AlignedAnchor3DRangeGenerator',
-            ranges=[
-                [0, -39.68, -0.6, 69.12, 39.68, -0.6],
-                [0, -39.68, -0.6, 69.12, 39.68, -0.6],
-                [0, -39.68, -1.78, 69.12, 39.68, -1.78],
-                [0, -39.68, -1.78, 69.12, 39.68, -1.78],
+            ranges=[[
+                -136.7853946685791, -135.2938232421875, -45.29965019226074,
+                136.7853946685791, 135.2938232421875, 45.29965019226074
+            ]],
+            scales=[1, 2, 4],
+            sizes=[
+                [2.5981, 0.8660, 1.],  # 1.5 / sqrt(3)
+                [1.7321, 0.5774, 1.],  # 1 / sqrt(3)
+                [1., 1., 1.],
+                [0.4, 0.4, 1],
             ],
-            sizes=[[0.8, 0.6, 1.73], [1.76, 0.6, 1.73], [3.9, 1.6, 1.56], [3.9, 1.6, 1.56]],
             rotations=[0, 1.57],
-            reshape_out=False),
+            reshape_out=True),
+        assigner_per_size=False,
         diff_rad_by_sin=True,
-        bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'),
+        dir_offset=-0.7854,  # -pi / 4
+        bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder', code_size=7),
         loss_cls=dict(
             type='mmdet.FocalLoss',
             use_sigmoid=True,
@@ -58,49 +79,30 @@ model = dict(
             alpha=0.25,
             loss_weight=1.0),
         loss_bbox=dict(
-            type='mmdet.SmoothL1Loss', beta=1.0 / 9.0, loss_weight=2.0),
+            type='mmdet.SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0),
         loss_dir=dict(
             type='mmdet.CrossEntropyLoss', use_sigmoid=False,
             loss_weight=0.2)),
+    # model training and testing settings
     train_cfg=dict(
-        assigner=[
-            dict(
-                type='Max3DIoUAssigner',
-                iou_calculator=dict(type='BboxOverlapsNearest3D'),
-                pos_iou_thr=0.5,
-                neg_iou_thr=0.35,
-                min_pos_iou=0.35,
-                ignore_iof_thr=-1),
-            dict(
-                type='Max3DIoUAssigner',
-                iou_calculator=dict(type='BboxOverlapsNearest3D'),
-                pos_iou_thr=0.5,
-                neg_iou_thr=0.35,
-                min_pos_iou=0.35,
-                ignore_iof_thr=-1),
-            dict(
+        pts=dict(
+            assigner=dict(
                 type='Max3DIoUAssigner',
                 iou_calculator=dict(type='BboxOverlapsNearest3D'),
                 pos_iou_thr=0.6,
-                neg_iou_thr=0.45,
-                min_pos_iou=0.45,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
                 ignore_iof_thr=-1),
-            dict(
-                type='Max3DIoUAssigner',
-                iou_calculator=dict(type='BboxOverlapsNearest3D'),
-                pos_iou_thr=0.6,
-                neg_iou_thr=0.45,
-                min_pos_iou=0.45,
-                ignore_iof_thr=-1),
-        ],
-        allowed_border=0,
-        pos_weight=-1,
-        debug=False),
+            allowed_border=0,
+            code_weight=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+            pos_weight=-1,
+            debug=False)),
     test_cfg=dict(
-        use_rotate_nms=True,
-        nms_across_levels=False,
-        nms_thr=0.01,
-        score_thr=0.1,
-        min_bbox_size=0,
-        nms_pre=100,
-        max_num=50))
+        pts=dict(
+            use_rotate_nms=True,
+            nms_across_levels=False,
+            nms_pre=1000,
+            nms_thr=0.2,
+            score_thr=0.05,
+            min_bbox_size=0,
+            max_num=500)))
