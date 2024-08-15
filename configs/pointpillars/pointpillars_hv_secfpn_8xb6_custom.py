@@ -55,9 +55,9 @@ param_scheduler = [
 ]
 
 # runtime settings
-train_cfg = dict(by_epoch=True, max_epochs=MAX_EPOCHS, val_interval=20)
-val_cfg = dict()
-test_cfg = dict()
+train_cfg = dict(by_epoch=True, max_epochs=10, val_interval=20)
+val_cfg = dict(type='ValLoop')
+test_cfg = dict(type='TestLoop')
 
 # Default setting for scaling LR automatically
 #   - `enable` means enable scaling LR automatically
