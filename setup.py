@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from pckg_util import check_gpu_and_torch_compatibility
+check_gpu_and_torch_compatibility()
+
 import os
 import platform
 import shutil
