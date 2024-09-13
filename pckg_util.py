@@ -28,6 +28,7 @@ def install_and_import(package, version="", params="", link="", packageimportnam
             installation_cmd_list.append(link)
         try:
             subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade"])
             subprocess.check_call([sys.executable, "-m", "pip", *installation_cmd_list])
         except Exception as e:
             print(e)
