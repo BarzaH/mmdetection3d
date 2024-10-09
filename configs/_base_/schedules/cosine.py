@@ -19,7 +19,7 @@ param_scheduler = [
         eta_min=1e-5)
 ]
 # training schedule for 1x
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=40, val_interval=1)
+train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=200, val_interval=1)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 

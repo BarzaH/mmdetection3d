@@ -10,7 +10,7 @@ from mmdet3d.datasets.det3d_dataset import Det3DDataset
 class MyDataset(Det3DDataset):
 
     METAINFO = {
-        'classes': tuple(sorted(list(('LEP110_prom', 'vegetation', 'LEP110_anchor', 'power_lines'))))
+        'classes': tuple(sorted(list(('LEP110_prom', 'vegetation', 'LEP110_anchor', 'power_lines', 'forest'))))
     }
 
     def parse_ann_info(self, info):

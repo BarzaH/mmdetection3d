@@ -6,7 +6,7 @@ custom_imports = dict(imports=[
 
 dataset_type = 'MyDataset'
 data_root = 'DATA_ROOT'
-class_names = ['LEP110_anchor', 'LEP110_prom', 'power_lines', 'vegetation']
+class_names = sorted(list(('LEP110_prom', 'vegetation', 'LEP110_anchor', 'power_lines', 'forest')))
 pcr = [
                 -136.7853946685791, -135.2938232421875, -45.29965019226074,
                 136.7853946685791, 135.2938232421875, 45.29965019226074
@@ -105,3 +105,5 @@ test_dataloader = dict(
         metainfo=metainfo,
         box_type_3d='LiDAR'))
 test_evaluator = val_evaluator
+
+

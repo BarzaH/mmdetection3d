@@ -60,6 +60,16 @@ def parse_args():
     # will pass the `--local-rank` parameter to `tools/train.py` instead
     # of `--local_rank`.
     parser.add_argument('--local_rank', '--local-rank', type=int, default=0)
+    parser.add_argument(
+        '--data_root',
+        default=None,
+        help='Input data dir')
+    parser.add_argument(
+        '--class_names',
+        default=None,
+        help='List of class names')
+
+
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -71,6 +81,20 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
+    if args.data_root:
+        cfg.data_root = args.data_root
+        cfg.train_dataloader.dataset.data_root = args.data_root
+        cfg.val_dataloader.dataset.data_root = args.data_root
+        cfg.test_dataloader.dataset.data_root = args.data_root
+    if args.class_names:
+        cfg.class_names = eval(args.class_names)
+        cfg.train_dataloader.dataset.classes = eval(args.class_names)
+        cfg.val_dataloader.dataset.classes = eval(args.class_names)
+        cfg.test_dataloader.dataset.classes = eval(args.class_names)
+        cfg.val_evaluator.classes = eval(args.class_names)
+        cfg.test_evaluator.classes = eval(args.class_names)
+
+        cfg.model.pts_bbox_head.tasks = [dict(num_class=1, class_names=[class_name]) for class_name in eval(args.class_names)]
 
     # TODO: We will unify the ceph support approach with other OpenMMLab repos
     if args.ceph:
@@ -139,6 +163,7 @@ def main():
 
     # start training
     runner.train()
+
 
 
 if __name__ == '__main__':
