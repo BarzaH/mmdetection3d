@@ -91,16 +91,19 @@ def init_model(config: Union[str, Path, Config],
         test_dataset_cfg = deepcopy(config.test_dataloader.dataset)
         # lazy init. We only need the metainfo.
         #test_dataset_cfg['lazy_init'] = True
-        metainfo = DATASETS.build(test_dataset_cfg).metainfo
-        cfg_palette = metainfo.get('palette', None)
-        if cfg_palette is not None:
-            model.dataset_meta['palette'] = cfg_palette
-        else:
-            if 'palette' not in model.dataset_meta:
-                warnings.warn(
-                    'palette does not exist, random is used by default. '
-                    'You can also set the palette to customize.')
-                model.dataset_meta['palette'] = 'random'
+        try:
+            metainfo = DATASETS.build(test_dataset_cfg).metainfo
+            cfg_palette = metainfo.get('palette', None)
+            if cfg_palette is not None:
+                model.dataset_meta['palette'] = cfg_palette
+            else:
+                if 'palette' not in model.dataset_meta:
+                    warnings.warn(
+                        'palette does not exist, random is used by default. '
+                        'You can also set the palette to customize.')
+                    model.dataset_meta['palette'] = 'random'
+        except Exception as e:
+            model.dataset_meta['palette'] = 'random'
 
     model.cfg = config  # save the config in the model for convenience
     if device != 'cpu':
