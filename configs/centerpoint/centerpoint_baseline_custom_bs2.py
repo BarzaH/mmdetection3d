@@ -28,7 +28,7 @@ model = dict(
     test_cfg=dict(pts=dict(pc_range=point_cloud_range[:2])))
 
 # runtime settings
-train_cfg = dict(by_epoch=True, max_epochs=100)
+train_cfg = dict(max_epochs=100)
 
 # dataset_type = 'CustomDataset'
 # data_root = 'DATA_ROOT'
