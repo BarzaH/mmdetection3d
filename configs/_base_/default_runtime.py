@@ -4,8 +4,8 @@ default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=50),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    # checkpoint=dict(type='CheckpointHook', save_best='auto', rule='greater', max_keep_ckpts=1, by_epoch=True),
-    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
+    checkpoint=dict(type='CheckpointHook', save_best=["mAR_0.50", "mAP_0.50"], rule='greater', max_keep_ckpts=1, interval=1, by_epoch=True),
+    # checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='Det3DVisualizationHook'))
 
