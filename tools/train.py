@@ -68,7 +68,10 @@ def parse_args():
         '--class_names',
         default=None,
         help='List of class names')
-
+    parser.add_argument(
+        '--max_epochs',
+        default=None,
+        help='Number of epochs to train')
 
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -93,8 +96,10 @@ def main():
         cfg.test_dataloader.dataset.classes = eval(args.class_names)
         cfg.val_evaluator.classes = eval(args.class_names)
         cfg.test_evaluator.classes = eval(args.class_names)
-
         cfg.model.pts_bbox_head.tasks = [dict(num_class=1, class_names=[class_name]) for class_name in eval(args.class_names)]
+
+    if args.max_epochs:
+        cfg.train_cfg.max_epochs = int(args.max_epochs)
 
     # TODO: We will unify the ceph support approach with other OpenMMLab repos
     if args.ceph:
