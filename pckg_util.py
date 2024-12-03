@@ -38,6 +38,10 @@ def install_and_import(package, version="", params="", link="", packageimportnam
                 domain = urlparse(link).netloc
                 installation_cmd_list.append("--trusted-host")
                 installation_cmd_list.append(domain)
+                installation_cmd_list.append("--trusted-host")
+                installation_cmd_list.append("pypi.org")
+                installation_cmd_list.append("--trusted-host")
+                installation_cmd_list.append("files.pythonhosted.org")
             subprocess.check_call([sys.executable, "-m", "pip", *installation_cmd_list])
         except Exception as e:
             print(e)
